@@ -1,0 +1,378 @@
+{{ block title }}
+<h1 style="margin-bottom: 20px;"><b>Round {{ Round }}</b></h1>
+{{ endblock }}
+{{ block content }}
+
+{{ include '_static/MyStyles.html'}}
+{{ include '_static/Timer.html' }}
+
+<style>
+    #TeamChart {
+        margin-top: 30px;
+        width: 100%;
+        height: 100px;
+        border: none;
+        position: relative;
+    }
+    #NumberLine {
+        width: 1000px;
+        height: 0px; /* Make the number line thinner */
+        background-color: black;
+        position: absolute;
+        bottom: 50%; /* Vertically center within the bar */
+        transform: translateY(50%); /* Vertically center within the bar */
+        z-index: 1;
+    }
+    .stlTick {
+        position: absolute;
+        height: 10px;
+        background-color: black;
+        width: 1px;
+        z-index: 2;
+    }
+    .stlExtraLargeTick {
+        position: absolute;
+        top: -25px;
+        height: 35px;
+        background-color: limegreen;
+        width: 5px;
+        z-index: 1;
+    }
+    .stlSmallTick {
+        position: absolute;
+        height: 5px;
+        background-color: black;
+        width: 1px;
+        z-index: 2;
+    }
+    .stlTickLabel {
+        position: absolute;
+        top: 15px; /* Adjust vertical position to align with tick marks */
+        text-align: center;
+        font-size: 15px;
+        z-index: 2;
+    }
+    .stlChartLabel {
+        position: absolute;
+        top: -50px;
+        text-align: right;
+        font-size: 17px;
+        color: mediumseagreen;
+        width: 200px;
+        z-index: 2;
+    }
+    #BarMates {
+        position: absolute;
+        bottom: 37px;
+        height: 23px;
+        background-color: darkorange;
+        z-index: 0;
+        transition: width 0.5s; /* Add a smooth transition */
+    }
+    #BarMe {
+        position: absolute;
+        bottom: 37px;
+        height: 23px;
+        background-color: cornflowerblue;
+        z-index: 0;
+        transition: width 0.5s, left 0.5s; /* Add a smooth transition */
+    }
+    .stlBarPA {
+        text-align: right;
+        transition: width 0.5s;
+        border: 1px solid dimgray;
+    }
+    .stlBtnTransfer {
+        background-color: cornflowerblue;
+        color: white;
+    }
+    .stlBtnTransfer:hover {
+        background-color: #1d66e8;
+        color: white;
+    }
+</style>
+<p id="test1" style="display: block"></p>
+
+<p class="h3" style="margin-top: 60px">
+    You are team member <span id="MyID" style="font-weight: bold; color: #1d66e8">{{ MyID }}</span>.
+</p>
+
+<p id="d5wait" style="margin-left: 5px; margin-top: 20px; font-size: 12pt">
+    Please wait for your turn.
+</p>
+
+{{ include '_static/DisplayContent.html' }}
+<br><br><br>
+
+<div id="HiddenFields" style="display: none">
+    {{ formfield "ProjectSuccess" }}
+</div>
+
+<button id="submit" onclick="sub()" type="button">Submit</button>
+<button id="btnext" class="otree-btn-next" style="display: none">Next</button>
+
+{{ include '_static/JS_Functions.html'}}
+<script>
+    const MyID = js_vars.MyID;
+    const MyEndowment = js_vars.MyEndowment;
+    const EndowBarWidth = 450;
+    const Threshold = js_vars.Threshold;
+    const MaxTotal = js_vars.MaxTotal;
+    const fldSuccess = document.getElementById("id_ProjectSuccess");
+    let CurrentPlayer = 1;
+    document.getElementById("test1").innerHTML = "it is "
+
+    // Displays
+    const elementsList = [
+        document.getElementById('d1'),
+        document.getElementById('d2'),
+        document.getElementById('d3'),
+        document.getElementById('d4'),
+        document.querySelector('#AccountBalance'),
+        document.querySelector('#TeamChart'),
+        document.querySelector('#TransferButtons'),
+        document.querySelector('#CurrentStatus'),
+        document.getElementById('submit')
+    ];
+
+    // Function to change the style.display property for elements in the list
+    function setDisplayStyles(displayValue) {
+        elementsList.forEach((element) => {
+            element.style.display = displayValue;
+        });
+        let opposite;
+        if (displayValue === 'block') {
+            opposite = 'none';
+        } else {
+            opposite = 'block';
+        }
+        document.getElementById('d5wait').style.display = opposite;
+    }
+
+    if (CurrentPlayer === MyID) {
+        setDisplayStyles('block');
+    } else {
+        setDisplayStyles('none');
+    }
+
+    let MyTotal = 0;
+    let OtherTotal = 0;
+
+    const LblMyTotal = document.getElementById('MyTotalTransfer');
+    const LblOtherTotal = document.getElementById('OtherTotalTransfer');
+    const LblProjectStatus = document.getElementById('ProjectStatus');
+    const LblDestruction = document.getElementById('Destruction');
+
+    const divNext = document.getElementById('DivNextButton');
+    const divNextNoMore = document.getElementById('DivNextButtonNoMore');
+    const LblEndTitle = document.getElementById('EndTitle');
+    const LblEndInfo = document.getElementById('EndInfo');
+    const btnNext = document.getElementsByClassName('otree-btn-next')[0];
+    btnNext.innerHTML = 'Click to continue';
+    btnNext.className = 'stlMyButton';
+    btnNext.style.float = 'none';
+    btnNext.style.marginTop = '10px';
+    // btnNext.style.marginLeft = '0';
+
+
+    // Initialize charts
+    updatePrivateAccount(MyTotal);
+    let ScaleEnd = iniTeamChart(Threshold, MaxTotal);
+    updateTeamChart(MyTotal, OtherTotal);
+
+    document.addEventListener('DOMContentLoaded', function () {
+        liveSend({'MsgType': 'Update'});
+    });
+
+    function updatePrivateAccount(my_total) {
+        const bar_PA1 = document.getElementById('barPA1');
+        const bar_PA2 = document.getElementById('barPA2');
+        let my_balance = MyEndowment - my_total;
+        bar_PA1.style.width = `${EndowBarWidth * (1 - my_total/MyEndowment)}px`;
+        bar_PA2.style.width = `${EndowBarWidth * my_total/MyEndowment}px`;
+        if (my_balance>2) {
+            bar_PA1.innerHTML = my_balance.toString();
+            bar_PA2.innerHTML = "";
+        } else {
+            bar_PA1.innerHTML = "";
+            bar_PA2.style.paddingLeft = '5px';
+            bar_PA2.innerHTML = my_balance.toString();
+        }
+        if (my_total>0) {
+            bar_PA2.style.border = '1px solid dimgray';
+        }
+    }
+
+    function iniTeamChart(threshold, max) {
+        // Starting from max, where is the next prominent number to be used as the end point?
+        let scale_end = max;
+        let steps = [1, 5, 10, 25, 50, 100, 250, 500, 1000];
+        let k = 0;
+        let stepSize = steps[k];
+        let stepCount = 1;
+        let stepSizeNotFound = true;
+        while (stepSizeNotFound) {
+            if (scale_end%stepSize===0) {
+                if(scale_end/stepSize>25) {
+                    k++;
+                    stepSize = steps[k];
+                } else {
+                    stepCount = scale_end/stepSize;
+                    stepSizeNotFound = false;
+                }
+            } else {
+                scale_end += steps[k-1];
+            }
+        }
+
+        // Clear any existing tick marks and labels
+        const number_line = document.getElementById('NumberLine');
+        number_line.innerHTML = '';
+
+        // Tick marks and tick labels
+        let left = 0;
+        let curStep = 0;
+        for (let i = 0; i <= stepCount; i++) {
+            const tickPosition = 100 * i * stepSize / scale_end;
+            const tick = document.createElement('div');
+            tick.classList.add('stlTick');
+            tick.style.left = `${tickPosition}%`;
+            number_line.appendChild(tick);
+
+            if (i<stepCount) {
+                for (let j = 1; j <= 4; j++) {
+                    const smallTickPos = tickPosition + 100 * j * (stepSize/5) / scale_end;
+                    const smallTick = document.createElement('div');
+                    smallTick.classList.add('stlSmallTick');
+                    smallTick.style.left = `${smallTickPos}%`;
+                    number_line.appendChild(smallTick);
+                }
+            }
+
+            const tickLabel = document.createElement('div');
+            tickLabel.classList.add('stlTickLabel');
+            let left = tickPosition - 0.4; // Adjust horizontal position
+            if (curStep>=10) {left -= 0.3;}
+            if (curStep>=100) {left -= 0.5;}
+            tickLabel.style.left = `${left}%`; // Adjust horizontal position
+            tickLabel.textContent = curStep.toString();
+            number_line.appendChild(tickLabel);
+            curStep += stepSize;
+        }
+
+        // Threshold level tick
+        let thresh_tick = document.createElement('div');
+        thresh_tick.classList.add('stlExtraLargeTick');
+        thresh_tick.style.left = `${100 * threshold / scale_end - 0.2}%`;
+        thresh_tick.style.backgroundColor = 'red';
+        number_line.appendChild(thresh_tick);
+
+        // Threshold level tick label
+        let threshold_label = document.createElement('div');
+        threshold_label.classList.add('stlChartLabel');
+        left = parseFloat(thresh_tick.style.left) - 18;
+        threshold_label.style.left = `${left}%`;
+        threshold_label.style.color = 'red';
+        threshold_label.textContent = "Project success";
+        number_line.appendChild(threshold_label);
+
+        // MaxTotal level tick
+        let max_tick = document.createElement('div');
+        max_tick.classList.add('stlExtraLargeTick');
+        max_tick.style.left = `${100 * max / scale_end - 0.2}%`;
+        number_line.appendChild(max_tick);
+
+        // MaxTotal level tick label
+        const max_label = document.createElement('div');
+        max_label.classList.add('stlChartLabel');
+        left = parseFloat(max_tick.style.left) - 18;
+        max_label.style.left = `${left}%`;
+        max_label.textContent = "Maximum";
+        number_line.appendChild(max_label);
+
+        return scale_end;
+    }
+
+    function updateTeamChart(my_total, other_total) {
+        LblMyTotal.innerHTML = MyTotal.toString() + " points";
+        LblOtherTotal.innerHTML = OtherTotal.toString() + " points";
+        let team_total = MyTotal + OtherTotal;
+        LblProjectStatus.innerHTML = iif(team_total<Threshold, "Fail!", "Success!");
+        fldSuccess.value = iif(team_total<Threshold, 0, 1);
+        let destruction = 2 * (MaxTotal - team_total);
+        LblDestruction.innerHTML = destruction.toString() + " points";
+
+        const bar_mates = document.getElementById('BarMates');
+        const bar_mates_size_cur = 100 * parseFloat(getComputedStyle(bar_mates).width) / ScaleEnd;
+        const bar_mates_size_new = 100 * other_total / ScaleEnd;
+        const bar_me = document.getElementById('BarMe');
+        const bar_me_size_cur = 100 * parseFloat(getComputedStyle(bar_me).width) / ScaleEnd;
+        const bar_me_size_new = 100 * my_total / ScaleEnd;
+
+        // Set the bar width and position with animation
+        if ((bar_mates_size_new !== bar_mates_size_cur) || (bar_me_size_new !== bar_me_size_cur)) {
+            if (bar_mates_size_new > 0) {bar_mates.style.visibility = 'visible';}
+            if (bar_me_size_new > 0) {bar_me.style.visibility = 'visible';}
+            bar_mates.style.width = `${bar_mates_size_new}%`;
+            bar_me.style.left = `${bar_mates_size_new}%`;
+            bar_me.style.width = `${bar_me_size_new}%`;
+        }
+    }
+    function btnPlusOne() {
+        if (MyTotal<MyEndowment) {
+            liveSend({
+                'MsgType': "Contri",
+                'Contri': 1,
+                'CurTime': js_vars.GroupTimeLimit - fldTimeLeft.value
+            });
+        }
+    }
+    function btnPlusTen() {
+        if (MyTotal<MyEndowment) {
+            liveSend({
+                'MsgType': "Contri",
+                'Contri': 10,
+                'CurTime': js_vars.GroupTimeLimit - fldTimeLeft.value
+            });
+        }
+    }
+
+    function liveRecv(data) {
+        let id = 0;
+        let team_total = MyTotal + OtherTotal;
+        for (let total of data.MyTotals) {
+            id ++;
+            if (id === MyID && MyTotal !== total) {
+                MyTotal = total;
+                updatePrivateAccount(MyTotal);
+            }
+        }
+        if (team_total !== data.TeamTotal) {
+            team_total = data.TeamTotal;
+            OtherTotal = team_total - MyTotal;
+            updateTeamChart(MyTotal, OtherTotal);
+        }
+        if (team_total >= MaxTotal) {
+            divNext.style.display = 'block';
+            document.getElementById('d5wait').style.display = 'none';
+        } else {
+            TimeShift = data.TimeShift;
+        }
+        if (data.ChangePlayer) {
+            CurrentPlayer += 1;
+            if (MyID === CurrentPlayer){
+                setDisplayStyles('block');
+                timer_Show();
+            } else if (MyID > CurrentPlayer) {
+                setDisplayStyles('none');
+            } else {
+                btnNext.click();
+            }
+            adjust = data.Adjustment;
+            adjust2 = data.Adjustment2;
+        }
+    }
+</script>
+
+{{ endblock }}
+

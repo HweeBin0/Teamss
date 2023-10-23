@@ -1,0 +1,341 @@
+{{ block title }}
+{{ endblock }}
+{{ block content }}
+    <div class="container">
+        <div class="left-side">
+            <p>Player Number: {{ playerid }}</p>
+            <p id="timer">Time remaining: <span id="count">30</span> seconds</p>
+            <div id="popup-container">
+                <p>Last 10 seconds left. Note that the timer will not refresh anymore.</p>
+            </div>
+            <!-- <p id="background-timer">Background Timer: {{ timer }} seconds</p> --->
+            <br>
+            <p>Team:</p>
+            <p id="initialtarget">Maximum total: {{ target }}</p>
+            <p id="mintarget">Minimum threshold: {{ mintarget }}</p>
+            <p id="provided">Effort points provided so far by other teammates (if any): 0</p>
+            <p id="targetremain-display">Effort left to reach the maximum total: {{ target }}</p>
+            <br>
+            <p>You:</p>
+            <p id="initialendow">Initial effort points balance {{ endowment }}</p>
+            <p id="contribution-display">Contribution: {{ player.contribution }}</p>
+            <p id="endowremain-display">Remaining effort points: {{ remaine }}</p>
+            <p id="finish">You have finished your effort points, please wait for the other group members.</p>
+            <!-- <input id="contribution" type="hidden" name="contribution" value="{{ player.contribution }}"> -->
+            <!-- <button id="submit" onclick="next()" type="button">Submit</button> -->
+            <p id="nomore">The maximum total has reached, please click next to proceed.</p>
+            <!-- <p id="wait">Please wait.</p> -->
+            <button id="btnext" class="otree-btn-next">Next</button>
+        </div>
+        <div class="right-side">
+            <div class="floating-square"></div> <!-- a floating box to hide part of the chart because the scale of the chart is fix for all target -->
+            <script src="https://code.highcharts.com/highcharts.js"></script>
+            <figure class="highcharts-figure">
+                <div id="container" class="hidden-chart"></div>
+            </figure>
+
+            <div class="button-container">
+                <button id="increment1-button" onclick="increment1()" type="button">Add 1 to Contribution</button>
+                <button id="increment10-button" onclick="increment10()" type="button">Add 10 to Contribution</button>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <style>
+        /* Your CSS code here */
+        #popup-container {
+            border: 2px solid red;
+            display: none;
+            padding: 2px;
+        }
+
+        .hidden-chart {
+            display: none;
+        }
+
+        .container {
+            display: flex;
+            margin-top:15px;
+        }
+        .left-side {
+            flex-grow: 1;
+        }
+        .right-side {
+            flex-shrink: 1;
+            margin-left: 20px; /* Adjust the margin as needed */
+        }
+        #container {
+          width: 400px; /* Adjust the width as needed */
+          height: 500px; /* Adjust the height as needed */
+        }
+        .button-container {
+            display: flex;
+        }
+        .button-container button {
+            margin-right: 10px; /* adjust the margin as needed */
+        }
+        .floating-square {
+            position: absolute;
+            width: 400px; /* Adjust the width of the square */
+            height: 0px; /* Adjust the height of the square */
+            background-color: white; /* Set the background color to white */
+            z-index: 1; /* Adjust the z-index as needed to control the stacking order */
+        }
+    </style>
+
+
+    <script>
+        let me = js_vars.MyRole;
+        let Grouptarget = js_vars.Grouptarget;
+        let Mintarget = js_vars.Mintarget;
+        //timer related:
+        let timer = document.getElementById('timer');
+        let count = document.getElementById('count');
+        let secondsLeft = 30;
+        var countdown;
+        // let background_timer = document.getElementById('background-timer');
+        let backgroundTimerSecondsLeft = js_vars.Grouptimer;
+        var backcountdown;
+        let popup = document.getElementById('popup-container');
+        //target, contributions, endowments:
+        let initialtarget = document.getElementById('initialtarget');
+        let mintarget = document.getElementById('mintarget');
+        let provided = document.getElementById('provided');
+        let targetdis = document.getElementById('targetremain-display');
+        let initialendow = document.getElementById('initialendow');
+        let contridis = document.getElementById('contribution-display');
+        let endowdis = document.getElementById('endowremain-display');
+        var otherscontri;
+        var contributionlist;
+        var mycontri;
+        //buttons:
+        let incre1 = document.getElementById('increment1-button');
+        let incre10 = document.getElementById('increment10-button');
+        // let submit = document.getElementById('submit');
+        let btnext = document.getElementById('btnext');
+        //statement:
+        // let wait = document.getElementById('wait');
+        let nomore = document.getElementById('nomore');
+        let finish = document.getElementById('finish');
+
+        let gameInProgress = true;
+        let currelement = [incre1, incre10, contridis, targetdis, endowdis, timer, initialtarget, initialendow, mintarget, provided];
+        const floatingSquare = document.querySelector('.floating-square');
+        var chart = Highcharts.chart('container', {
+            chart: {
+                type: 'column'
+            },
+            yAxis: {
+                title: {
+                    text: ''
+                },
+                max: 135,
+                tickInterval: 10, // Set the interval for grid lines
+                plotLines: [{
+                    value: Grouptarget,
+                    color: '#000000',
+                    width: 2,
+                    zIndex: 4,
+                    label: {
+                        text: 'Maximum total',
+                        align: 'right'
+                    }
+                }, {
+                    value: Mintarget,
+                    color: '#000000',
+                    width: 2,
+                    zIndex: 4,
+                    label: {
+                        text: 'Minimum threshold',
+                        align: 'right'
+                    }
+                }]
+            },
+            xAxis: {
+                visible: false
+            },
+            title: {
+                text: null
+            },
+            legend: {
+                itemDistance: 20
+            },
+            plotOptions: {
+                column: {
+                    stacking: 'normal',
+                    dataLabels: {
+                        enabled: true,
+                        format: '{y}'
+                    }
+                },
+                series: {
+                    events: {
+                        legendItemClick: function () {
+                            return false;
+                        }
+                    }
+                }
+            },
+            series: [{
+                id: 'youSeries',
+                name: 'You',
+                data: [0],
+                color: '#be0033'
+            }, {
+                id: 'teammatesSeries',
+                name: 'Your Teammates',
+                data: [0],
+                color: '#7cb5ec'
+            }],
+            credits: {
+                enabled: false
+            },
+            tooltip: {
+                enabled: false
+            }
+        });
+
+        function updateChart(data) {
+            var youSeries = chart.get('youSeries');
+            youSeries.setData([data]); // Assuming 'data' contains the updated value received from live communication
+        } //update the chart based on own contribution
+
+        function updateChartTM(data) {
+            var teammatesSeries = chart.get('teammatesSeries');
+            teammatesSeries.setData([data]); // Assuming 'data' contains the updated value received from live communication
+        } //update the chart based on other teammates' contributions
+
+        function blankbox() {
+            if (Grouptarget === 125) {
+                // Update the height of the floating square to 0px
+                floatingSquare.style.height = '0px';
+            } else if (Grouptarget === 75) {
+                // Update the height of the floating square to 130px
+                floatingSquare.style.height = '145px';
+            } else {
+                // Update the height of the floating square to 230px
+                floatingSquare.style.height = '245px';
+            }
+        } //to update the box according to the target
+
+        function startBackgroundTimer() {
+            backcountdown = setInterval(function() {
+                backgroundTimerSecondsLeft--;
+                // document.getElementById('background-timer').innerText = "Background Timer: " + backgroundTimerSecondsLeft + " seconds";
+            }, 1000);
+        }
+
+        function startTimer() {
+            countdown = setInterval(function() {
+                secondsLeft--;
+                count.innerText = secondsLeft;
+                if (backgroundTimerSecondsLeft === 10) {
+                    clearInterval(countdown);
+                    secondsLeft = 10
+                    count.innerText = secondsLeft
+                    startTimer()
+                    popup.style.display = "block";
+                }
+                if (secondsLeft <= 0) { //when time is up
+                    clearInterval(countdown);
+                    clearInterval(backcountdown);
+                    timer.innerHTML = 'Time is up!'; //show this line
+                    popup.style.display = "none"; //remove the popup
+                    for (let el of currelement) {
+                        if (el === timer) {
+                            continue;
+                        }
+                        el.style.display = "none"; //do not display the list from currelement except for timer, skip it (show it)
+                        document.getElementById('container').classList.add('hidden-chart'); //hide the chart
+                        floatingSquare.style.display = 'none'; //to hide the blank box
+                    }
+                    // submit.style.display = "block";
+                    btnext.style.display = "block";
+                    // Add any other code to execute when time is up here
+                }
+            }, 1000);
+        }
+
+        if (gameInProgress) {
+            // wait.style.display = "none";
+            btnext.style.display = "none";
+            nomore.style.display = "none";
+            // submit.style.display = "none";
+            popup.style.display = "none";
+            finish.style.display = "none";
+            document.getElementById('container').classList.remove('hidden-chart'); //show the chart
+            floatingSquare.style.display = 'block'; //to show the blank box
+            blankbox()
+            startTimer();
+            startBackgroundTimer();
+        }
+
+        function liveRecv(data) {
+            if (data.groupremain === 0){ //if the target is 0
+                nomore.style.display = "block"; //to display that there is no more target left
+                finish.style.display = "none";
+                btnext.style.display = "block"; //to display the next button
+                incre1.style.display = "none"; //to remove the contribution button
+                incre10.style.display = "none";
+                clearInterval(countdown);
+                for (let el of currelement){
+                    el.style.display = "none";
+                }
+                document.getElementById('container').classList.add('hidden-chart'); //hide the chart
+                floatingSquare.style.display = 'none'; //to hide the blank box
+            } else { //else if target is not 0
+                if (data.remainE === 0) { //if my remaining endowment is zero
+                    if (data.senderid === me) {
+                        finish.style.display = "block"; //to show that endowment is zero now
+                        // submit.style.display = "block"; //to show the submit button
+                        incre1.style.display = "none"; //to remove the contribution button
+                        incre10.style.display = "none";
+                        document.getElementById("endowremain-display").innerHTML = "Remaining effort points: " + data.remainE;
+                    }
+                    contributionlist = data.contributionslist
+                    mycontri = contributionlist[me-1]
+                    otherscontri = data.groupcontri - mycontri;
+                    updateChart(mycontri);
+                    updateChartTM(otherscontri);
+                    document.getElementById("contribution-display").innerHTML = "Contribution: " + mycontri;
+                    document.getElementById("provided").innerHTML = "Effort points provided so far by other teammates (if any): " + otherscontri;
+                    document.getElementById("targetremain-display").innerHTML = "Effort left to reach the maximum total: " + data.groupremain;
+                } else { //if my remaining endowment is not zero
+                    if (data.senderid === me) {
+                        document.getElementById("endowremain-display").innerHTML = "Remaining effort points: " + data.remainE;
+                    }
+                    contributionlist = data.contributionslist
+                    mycontri = contributionlist[me-1]
+                    otherscontri = data.groupcontri - mycontri;
+                    updateChart(mycontri);
+                    updateChartTM(otherscontri);
+                    document.getElementById("contribution-display").innerHTML = "Contribution: " + mycontri;
+                    document.getElementById("provided").innerHTML = "Effort points provided so far by other teammates (if any): " + otherscontri;
+                    document.getElementById("targetremain-display").innerHTML = "Effort left to reach the maximum total: " + data.groupremain;
+                    if (secondsLeft < 10) {
+                        if (backgroundTimerSecondsLeft >= 10) {
+                            clearInterval(countdown);
+                            secondsLeft = 10;
+                            count.innerHTML = secondsLeft;
+                            startTimer();
+                        }
+                    }
+                }
+            }
+        }
+
+        function increment1() {
+            liveSend(1);
+        }
+        function increment10() {
+            liveSend(10);
+        }
+
+
+
+</script>
+
+{{ endblock }}

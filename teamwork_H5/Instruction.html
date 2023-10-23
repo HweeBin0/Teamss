@@ -1,0 +1,133 @@
+{{ block title }}
+    Instructions
+{{ endblock }}
+{{ block content }}
+
+
+    <div class="tab" onclick="showTab('general')">General Information</div>
+    <div class="tab" onclick="showTab('rounds')">Each Round</div>
+    <div class="tab" onclick="showTab('transfer')">Contribute Points</div>
+
+    <div class="tab-content" id="general">
+        <p><strong>General Information:</strong></p>
+        <p> Welcome! This session is part of an experiment about decision making in economics.
+            At the end of the session you will be paid, in private and in cash 5 Euros just for taking part plus an
+            additional amount that will depend on your decisions and on the decisions of others. How this works will be
+            explained in these instructions. Please read them carefully. If you have any questions, don't hesitate to ask. </p>
+            <br>
+        <p> <strong>Teams:</strong> At the start of the experiment, you will be grouped with {{ nminus }} other individuals,
+            randomly chosen from the people who are present today. Together you form a team of {{ n }}. Every team member
+            receives an ID number from 1 to {{ n }}. You will remain in the same team throughout the entire experiment, and your
+            ID number will also remain the same throughout.
+            You will never be informed about the identities of the people behind other ID numbers. </p>
+            <br>
+        <p> <strong>Rounds:</strong> The experiment consists of nine rounds, all of which proceed in the same way.
+            After round 3 and round 6, there will be some small changes.
+            You will receive information about these changes at the appropriate time. </p>
+            <br>
+        <p> <strong>Payment:</strong> During the experiment, earnings will be denoted in ”points”. Each point is worth
+            20 Cents. At the end of the experiment, ONE of the nine rounds will be chosen randomly.
+            The result of this randomly chosen round will determine your payment in Euros. </p>
+            <br>
+    </div>
+
+    <div class="tab-content" id="rounds">
+        <p><strong>What happens in each round?</strong></p>
+        <p>At the beginning of a round, you will receive an initial amount of 45 points, paid into your <strong>private account</strong>.
+            During the round, you can choose to transfer points from your private account to the <strong>team account</strong>.
+            Any points you choose not to transfer will remain in your private account. The situation is the same for your teammates. </p>
+            <br>
+        <p> You can imagine that you and your teammates are working on a team project. The team project will either fail or succeed.
+            It succeeds if, by the end of the round, the members of your team have overall transferred at least {{ onethird }} points (in total)
+            from their private accounts to the team account. If the project succeeds, each team member will receive a reward of 14
+            points (regardless of how much each individual has contributed to the project). If the threshold of {{ onethird }} points is not reached,
+            then the team project fails and no reward is paid. </p>
+            <br>
+        <p> Furthermore, a donation to the charity organization UNICEF will be made, and the amount donated will depend on how many
+            points have been allocated to the team accounts. For each team, UNICEF receives a budget of {{ 2x }} points at the beginning
+            of the round. However, by default, the computer is programmed to destroy all {{ 2x }} UNICEF points at the end of the round.
+            But for every 1 point that you and your team members transfer to the team account, 2 points of UNICEF are protected and
+            will not be destroyed by the computer. If your team account reaches the maximum total of {{ x }} points, UNICEF will keep its
+            entire budget. </p>
+            <br>
+        <p> The payment for UNICEF follows the same rules as the payment for you:
+            Only the randomly selected round will be relevant for the actual donation, and each point is worth 20 Cents.</p>
+
+    </div>
+
+    <div class="tab-content" id="transfer">
+        <p><strong>How to contribute points?</strong></p>
+        <p> During the round, you will see a timer on the screen, and while the timer is running, you and your teammates
+            can transfer points to the team account by clicking on some buttons on your screen. There will be a "+1" button
+            and a "+10" button. Every time you click on the "+1" button, 1 point will be transferred from your private account
+            to the team account.  Every time you click on the "+10" button, 10 points will be transferred from your private
+            account to the team account. On the left hand side of the screen, you will see real-time information about the
+            current total number of points in the team account. You will also see how many points are left in your private account.
+            The computer will not allow you to run into a deficit for your private account. </p>
+        <br>
+        <p> Initially, the timer on your screen starts with a 30-second countdown.
+            However, if you or one of your teammates makes a transfer during the last 10 seconds of the countdown,
+            the available time will be extended and the timer starts again from 10 seconds.
+            Subsequently, the timer will continue to refresh to 10 seconds as long as at least one of the team members makes another transfer.
+            The round will end either when you and your teammates let the timer run out,
+            or when you have reached the maximum total of {{ x }} points in the team account.
+            (There also is a randomly determined maximum time limit for each round;
+            should this time limit be reached then the computer will simply stop refreshing the timer even if you make another transfer.)</p>
+
+
+    </div>
+    <br>
+    <br>
+    {{ next_button }}
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            showTab("general");
+        });
+        function showTab(tabName) {
+            var tabs = document.getElementsByClassName("tab");
+            var tabContents = document.getElementsByClassName("tab-content");
+
+            // Hide all tab contents
+            for (var i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove("active");
+            }
+
+            // Show the selected tab content
+            var selectedTabContent = document.getElementById(tabName);
+            selectedTabContent.classList.add("active");
+
+            // Make the corresponding tab active
+            for (var i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove("active");
+                if (tabs[i].textContent === tabName.charAt(0).toUpperCase() + tabName.slice(1)) {
+                    tabs[i].classList.add("active");
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Your CSS code here */
+        .tab {
+            cursor: pointer;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+            display: inline-block; /* Display tabs side by side */
+        }
+
+        .tab.active {
+            background-color: #ddd;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+
+{{ endblock }}

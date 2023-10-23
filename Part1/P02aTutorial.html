@@ -1,0 +1,507 @@
+{{ block title }}
+<h1 style="margin-bottom: 20px;"><b>Tutorial</b></h1>
+{{ endblock }}
+{{ block content }}
+
+{{ include '_static/MyStyles.html'}}
+
+<style>
+    #TeamChart {
+        margin-top: 30px;
+        width: 100%;
+        height: 100px;
+        border: none;
+        position: relative;
+    }
+    #NumberLine {
+        width: 1000px;
+        height: 0px; /* Make the number line thinner */
+        background-color: black;
+        position: absolute;
+        bottom: 50%; /* Vertically center within the bar */
+        transform: translateY(50%); /* Vertically center within the bar */
+        z-index: 1;
+    }
+    .stlTick {
+        position: absolute;
+        height: 10px;
+        background-color: black;
+        width: 1px;
+        z-index: 2;
+    }
+    .stlExtraLargeTick {
+        position: absolute;
+        top: -25px;
+        height: 35px;
+        background-color: limegreen;
+        width: 5px;
+        z-index: 1;
+    }
+    .stlSmallTick {
+        position: absolute;
+        height: 5px;
+        background-color: black;
+        width: 1px;
+        z-index: 2;
+    }
+    .stlTickLabel {
+        position: absolute;
+        top: 15px; /* Adjust vertical position to align with tick marks */
+        text-align: center;
+        font-size: 15px;
+        z-index: 2;
+    }
+    .stlChartLabel {
+        position: absolute;
+        top: -50px;
+        text-align: right;
+        font-size: 17px;
+        color: mediumseagreen;
+        width: 200px;
+        z-index: 2;
+    }
+    #BarMates {
+        position: absolute;
+        bottom: 37px;
+        height: 23px;
+        background-color: darkorange;
+        z-index: 0;
+        transition: width 0.5s; /* Add a smooth transition */
+    }
+    #BarMe {
+        position: absolute;
+        bottom: 37px;
+        height: 23px;
+        background-color: cornflowerblue;
+        z-index: 0;
+        transition: width 0.5s, left 0.5s; /* Add a smooth transition */
+    }
+    .stlBarPA {
+        text-align: right;
+        transition: width 0.5s;
+        border: 1px solid dimgray;
+    }
+    .stlBtnTransfer {
+        background-color: cornflowerblue;
+        color: white;
+    }
+    .stlBtnTransfer:hover {
+        background-color: #1d66e8;
+        color: white;
+    }
+    /* Define the style for the "box" */
+    .info-box {
+        border: 2px solid red;
+        padding: 10px;
+        background-color: #fff;
+        margin-top: 20px;
+        cursor: pointer;
+    }
+
+    /* Define the style for the "popup" */
+    .popup {
+        position: fixed; /* Set the position to fixed */
+        top: 0; /* Position the popup at the top */
+        left: 50%;
+        transform: translateX(-50%); /* Center horizontally */
+        padding: 20px;
+        background-color: white;
+        border: 2px solid black;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        z-index: 9999;
+        display: none;
+        width: 40%; /* Adjust the width to a percentage that suits your layout */
+        max-height: 80%; /* Set a maximum height for the popup */
+        overflow-y: auto; /* Enable vertical scrolling within the popup if needed */
+    }
+    .stlMyButton:hover {
+        background-color: darkblue;
+    }
+    .stlMyButton {
+        float: left;
+    }
+
+
+</style>
+
+<!-- "Box" element with a trigger to show the "popup" for Step 1 -->
+<div class="info-box" id="box-1">
+    <p class="h3" style="margin-top: 60px">
+        You are team member <span id="MyID" style="font-weight: bold; color: #1d66e8">{{ MyID }}</span>.
+    </p>
+</div>
+
+<!-- "Popup" element for Step 1 -->
+<div id="popup-1" class="popup">
+    <p>This represents your unique team ID.</p>
+    <button type="button" onclick="nextStep()" class="stlMyButton">Next</button>
+</div>
+
+<!-- "Box" element with a trigger to show the "popup" for Step 2 -->
+<div class="info-box" id="box-2">
+    <table id="AccountBalance" style="margin-top: 10px">
+        <tr>
+            <td class="h3" style="width: 300px;">Your account balance:</td>
+            <td id="barPA1" class="stlBarPA"
+                style="padding-right: 5px; color: white; background-color: cornflowerblue; width: 450px;">
+                XX
+            </td>
+            <td id="barPA2" class="stlBarPA" style="border: none; text-align: left;">
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- "Popup" element for Step 2 -->
+<div id="popup-2" class="popup">
+    <p>This area displays your current point balance. You begin each round with a total of 45 points.</p>
+    <button type="button" onclick="backStep()" class="stlMyButton">Back</button>
+    <button type="button" onclick="nextStep()" class="stlMyButton">Next</button>
+</div>
+
+<p style="margin-left: 5px; margin-top: 20px; font-size: 12pt">
+    Please note: The reward for a successful project will be paid out at the end of the round.
+</p>
+
+<!-- "Box" element with a trigger to show the "popup" for Step 3 -->
+<div class="info-box" id="box-3">
+    <p class="h3" style="margin-top: 30px">The team account:</p>
+    <div id="TeamChart">
+        <div id="NumberLine" style="width: 100%">
+            <!-- Tick marks and labels will be added here dynamically -->
+        </div>
+        <div id="BarMates" style="width: 1px; visibility: hidden"></div>
+        <div id="BarMe" style="left: 1px; width: 1px; visibility: hidden"></div>
+    </div>
+</div>
+
+<!-- "Popup" element for Step 3 -->
+<div id="popup-3" class="popup">
+    <p>Here, you can track your team's progress and view transfers, including those made by your teammates.
+        Transfers initiated by you are shown in <span style="color: #1d66e8">blue</span>, while your teammates'
+        transfers are displayed in <span style="color: darkorange">orange</span>. </p>
+    <button type="button" onclick="backStep()" class="stlMyButton">Back</button>
+    <button type="button" onclick="nextStep()" class="stlMyButton">Next</button>
+</div>
+
+<!-- "Popup" element for Step 4 -->
+<div id="popup-4" class="popup">
+    <p>This section displays the remaining time within the current round.</p>
+    <button type="button" onclick="backStep()" class="stlMyButton">Back</button>
+    <button type="button" onclick="nextStep()" class="stlMyButton">Next</button>
+</div>
+
+<!-- "Box" element with a trigger to show the "popup" for Step 4 -->
+<style>
+    .otree-timer {
+        display: none;
+    }
+    div.TopCorner {
+        position: fixed;
+        top: 27px;
+        right: 30px;
+    }
+</style>
+
+<div class="TopCorner" id="box-4"
+     style="border-color: darkslategray; border-style: solid; border-width: 2px; border-radius: 12px;
+     background-color: #fa907c; display: block">
+    <p id="Timer" style="margin: 5px 15px 5px 15px; font-size: 1em; color: black;">Time left: 0:30
+        <span id="time-left" style="color: black; font-weight: bold"></span>
+    </p>
+</div>
+
+<!-- "Box" element with a trigger to show the "popup" for Step 5 -->
+<div class="info-box" id="box-5">
+    <table id="TransferButtons" style="width: 50%; margin-top: 30px">
+    <tr>
+        <td class="h3" style="width: 40%">Your transfer:</td>
+        <td>
+            <button type="button" class="btn stlBtnTransfer" style="width: 70px" >
+                +1
+            </button>
+            <button type="button" class="btn stlBtnTransfer" style="width: 70px" >
+                +10
+            </button>
+        </td>
+    </tr>
+</table>
+    <p style="margin-left: 5px; margin-top: 20px; font-size: 12pt">
+    If you wish to transfer points to the team account, click on the appropriate button.
+</p>
+</div>
+
+<!-- "Popup" element for Step 5 -->
+<div id="popup-5" class="popup">
+    <p>Use the "+1" button to transfer 1 point from your balance to the team account. The "+10" button transfers 10
+        points. Click "Next" to start a practice round.
+    </p>
+    <button type="button" onclick="backStep()" class="stlMyButton">Back</button>
+    <button type="button" onclick="nextStep()" class="stlMyButton">Next</button>
+</div>
+
+<!-- "Box" element with a trigger to show the "popup" for Step 3a -->
+<div class="info-box" id="box-3a">
+    <p class="h3" style="margin-top: 30px">The team project:</p>
+    <table id="CurrentStatus" style="margin-top: 20px">
+        <tr>
+            <td colspan="2">Total transfers to the team account so far:</td>
+        </tr>
+        <tr>
+            <td style="padding-top: 10px; padding-left: 30px">– From you:</td>
+            <td id="MyTotalTransfer"
+                style="padding: 10px 5px 0 10px; text-align: right; color: #1d66e8; font-weight: bold">
+                0 points
+            </td>
+        </tr>
+        <tr>
+            <td style="padding-top: 10px; padding-left: 30px">– From other team members:</td>
+            <td id="OtherTotalTransfer"
+                style="padding: 10px 5px 0 10px; text-align: right; color: darkorange; font-weight: bold">
+                100 points
+            </td>
+        </tr>
+        <tr>
+            <td style="padding-top: 10px">Project status:</td>
+            <td id="ProjectStatus" style="padding: 10px 5px 0 10px; text-align: center; color: red; font-weight: bold">
+                Fail!
+            </td>
+            <td style="padding: 10px 5px 0 20px; text-align: center; color: red; font-size: 15px">
+                (Reward for success: 14 points per team member.)
+            </td>
+        </tr>
+        <tr>
+            <td style="padding-top: 10px; padding-right: 5px">UNICEF points to be destroyed:</td>
+            <td id="Destruction" style="padding: 10px 5px 0 10px; text-align: right; color: mediumseagreen; font-weight: bold">
+                420 points
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div id="DivNextButton" style="margin-top: 50px; display: none">
+    <p id="EndTitle" class="h3" style="margin-top: 30px"></p>
+    {{ next_button }}
+</div>
+
+<br><br><br>
+
+<div id="HiddenFields" style="display: none">
+    {{ formfield "ProjectSuccessT" }}
+</div>
+
+
+{{ include '_static/JS_Functions.html'}}
+
+<script>
+    const MyID = js_vars.MyID;
+    const MyEndowment = js_vars.MyEndowment;
+    const EndowBarWidth = 450;
+    const Threshold = js_vars.Threshold;
+    const MaxTotal = js_vars.MaxTotal;
+    const fldSuccess = document.getElementById("id_ProjectSuccessT");
+
+    let MyTotal = 0;
+    let OtherTotal = 0;
+
+    const LblMyTotal = document.getElementById('MyTotalTransfer');
+    const LblOtherTotal = document.getElementById('OtherTotalTransfer');
+    const LblProjectStatus = document.getElementById('ProjectStatus');
+    const LblDestruction = document.getElementById('Destruction');
+
+    const divNext = document.getElementById('DivNextButton');
+    const LblEndTitle = document.getElementById('EndTitle');
+    const LblEndInfo = document.getElementById('EndInfo');
+    const btnNext = document.getElementsByClassName('otree-btn-next')[0];
+    btnNext.innerHTML = 'Click to continue';
+    btnNext.className = 'stlMyButton';
+    btnNext.style.float = 'none';
+    btnNext.style.marginTop = '10px';
+    // btnNext.style.marginLeft = '0';
+
+
+    // Initialize charts
+    updatePrivateAccount(MyTotal);
+    let ScaleEnd = iniTeamChart(Threshold, MaxTotal);
+    updateTeamChart(MyTotal, OtherTotal);
+
+
+    function updatePrivateAccount(my_total) {
+        const bar_PA1 = document.getElementById('barPA1');
+        const bar_PA2 = document.getElementById('barPA2');
+        let my_balance = MyEndowment - my_total;
+        bar_PA1.style.width = `${EndowBarWidth * (1 - my_total/MyEndowment)}px`;
+        bar_PA2.style.width = `${EndowBarWidth * my_total/MyEndowment}px`;
+        if (my_balance>2) {
+            bar_PA1.innerHTML = my_balance.toString();
+            bar_PA2.innerHTML = "";
+        } else {
+            bar_PA1.innerHTML = "";
+            bar_PA2.style.paddingLeft = '5px';
+            bar_PA2.innerHTML = my_balance.toString();
+        }
+        if (my_total>0) {
+            bar_PA2.style.border = '1px solid dimgray';
+        }
+    }
+
+    function iniTeamChart(threshold, max) {
+        // Starting from max, where is the next prominent number to be used as the end point?
+        let scale_end = max;
+        let steps = [1, 5, 10, 25, 50, 100, 250, 500, 1000];
+        let k = 0;
+        let stepSize = steps[k];
+        let stepCount = 1;
+        let stepSizeNotFound = true;
+        while (stepSizeNotFound) {
+            if (scale_end%stepSize===0) {
+                if(scale_end/stepSize>25) {
+                    k++;
+                    stepSize = steps[k];
+                } else {
+                    stepCount = scale_end/stepSize;
+                    stepSizeNotFound = false;
+                }
+            } else {
+                scale_end += steps[k-1];
+            }
+        }
+
+        // Clear any existing tick marks and labels
+        const number_line = document.getElementById('NumberLine');
+        number_line.innerHTML = '';
+
+        // Tick marks and tick labels
+        let left = 0;
+        let curStep = 0;
+        for (let i = 0; i <= stepCount; i++) {
+            const tickPosition = 100 * i * stepSize / scale_end;
+            const tick = document.createElement('div');
+            tick.classList.add('stlTick');
+            tick.style.left = `${tickPosition}%`;
+            number_line.appendChild(tick);
+
+            if (i<stepCount) {
+                for (let j = 1; j <= 4; j++) {
+                    const smallTickPos = tickPosition + 100 * j * (stepSize/5) / scale_end;
+                    const smallTick = document.createElement('div');
+                    smallTick.classList.add('stlSmallTick');
+                    smallTick.style.left = `${smallTickPos}%`;
+                    number_line.appendChild(smallTick);
+                }
+            }
+
+            const tickLabel = document.createElement('div');
+            tickLabel.classList.add('stlTickLabel');
+            let left = tickPosition - 0.4; // Adjust horizontal position
+            if (curStep>=10) {left -= 0.3;}
+            if (curStep>=100) {left -= 0.5;}
+            tickLabel.style.left = `${left}%`; // Adjust horizontal position
+            tickLabel.textContent = curStep.toString();
+            number_line.appendChild(tickLabel);
+            curStep += stepSize;
+        }
+
+        // Threshold level tick
+        let thresh_tick = document.createElement('div');
+        thresh_tick.classList.add('stlExtraLargeTick');
+        thresh_tick.style.left = `${100 * threshold / scale_end - 0.2}%`;
+        thresh_tick.style.backgroundColor = 'red';
+        number_line.appendChild(thresh_tick);
+
+        // Threshold level tick label
+        let threshold_label = document.createElement('div');
+        threshold_label.classList.add('stlChartLabel');
+        left = parseFloat(thresh_tick.style.left) - 18;
+        threshold_label.style.left = `${left}%`;
+        threshold_label.style.color = 'red';
+        threshold_label.textContent = "Project success";
+        number_line.appendChild(threshold_label);
+
+        // MaxTotal level tick
+        let max_tick = document.createElement('div');
+        max_tick.classList.add('stlExtraLargeTick');
+        max_tick.style.left = `${100 * max / scale_end - 0.2}%`;
+        number_line.appendChild(max_tick);
+
+        // MaxTotal level tick label
+        const max_label = document.createElement('div');
+        max_label.classList.add('stlChartLabel');
+        left = parseFloat(max_tick.style.left) - 18;
+        max_label.style.left = `${left}%`;
+        max_label.textContent = "Maximum";
+        number_line.appendChild(max_label);
+
+        return scale_end;
+    }
+
+    function updateTeamChart(my_total, other_total) {
+        MyTotal = my_total;
+        LblMyTotal.innerHTML = MyTotal.toString() + " points";
+        LblOtherTotal.innerHTML = OtherTotal.toString() + " points";
+        let team_total = MyTotal + OtherTotal;
+        LblProjectStatus.innerHTML = iif(team_total<Threshold, "Fail!", "Success!");
+        fldSuccess.value = iif(team_total<Threshold, 0, 1);
+        let destruction = 2 * (MaxTotal - team_total);
+        LblDestruction.innerHTML = destruction.toString() + " points";
+
+        const bar_mates = document.getElementById('BarMates');
+        const bar_mates_size_cur = 100 * parseFloat(getComputedStyle(bar_mates).width) / ScaleEnd;
+        const bar_mates_size_new = 100 * other_total / ScaleEnd;
+        const bar_me = document.getElementById('BarMe');
+        const bar_me_size_cur = 100 * parseFloat(getComputedStyle(bar_me).width) / ScaleEnd;
+        const bar_me_size_new = 100 * my_total / ScaleEnd;
+
+        // Set the bar width and position with animation
+        if ((bar_mates_size_new !== bar_mates_size_cur) || (bar_me_size_new !== bar_me_size_cur)) {
+            if (bar_mates_size_new > 0) {bar_mates.style.visibility = 'visible';}
+            if (bar_me_size_new > 0) {bar_me.style.visibility = 'visible';}
+            bar_mates.style.width = `${bar_mates_size_new}%`;
+            bar_me.style.left = `${bar_mates_size_new}%`;
+            bar_me.style.width = `${bar_me_size_new}%`;
+        }
+    }
+
+
+    let popupID = 1;
+    showPopup(popupID);
+
+    function showPopup(popupId) {
+        for (let i = 1; i <= 6; i++) {
+            const popup = document.getElementById('popup-' + i);
+            const box = document.getElementById('box-' + i);
+
+            if (i === popupId) {
+                popup.style.display = 'block';
+                box.style.border = '5px solid blue';
+            } else {
+                popup.style.display = 'none';
+                box.style.border = 'none';
+            }
+
+            if (popupId === 3) {
+                document.getElementById('box-3a').style.border = '5px solid blue';
+            } else {
+                 document.getElementById('box-3a').style.border = 'none';
+            }
+        }
+    }
+
+    function nextStep() {
+        popupID += 1;
+        if (popupID > 5) {
+            btnNext.click();
+        } else {
+            showPopup(popupID);
+        }
+    }
+
+    function backStep() {
+        popupID -= 1;
+        showPopup(popupID);
+    }
+
+
+</script>
+
+{{ endblock }}

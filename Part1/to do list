@@ -1,0 +1,22 @@
+prac
+- automatically submit the page or have a submit button?
+
+timer
+-to remove alert?
+-there is an alert when it's under 10 sec, but after clicking the contri, it will reset to 20,
+    problem is that the alert is still on but the timer display is off now
+-timer starts from 29 sec when it first shows up
+-vertical, last person, last sec, the page couldnt submit (H works fine)
+-vertical. if previous player submits early, the timeshift/time should be adjusted so that they will not use more than their own time limit
+
+
+contribution
+-when endowment is 0, subjects still have to wait for the timer? or to let it automatically submit? or click next? after all the subjects in H will wait
+-when max total is reached, then the next button will appear
+-remove the submit and next button
+
+payment
+-use the one from the payment info?
+
+
+document.getElementById('btnext').click();

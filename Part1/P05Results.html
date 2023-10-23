@@ -1,0 +1,40 @@
+{{ block title }}
+<h1 style="margin-bottom: 20px;"><b>Results for Round {{ Round }}</b></h1>
+{{ endblock }}
+{{ block content }}
+
+{{ include '_static/MyStyles.html'}}
+
+<p id="Success" style="margin-left: 5px; margin-top: 20px; font-size: 12pt; display: none">
+    Your team has successfully reached the maximum total of {{ MaxTotal }} points.
+    As a result, there will be no deductions from the charity, and you will receive an additional 14 points.
+    {{ AccountBalance }} points reside in your account.
+    If this round is chosen, your total earnings will be {{ Earnings }} points, including the extra 14 points
+</p>
+
+<p id="Incomplete" style="margin-left: 5px; margin-top: 20px; font-size: 12pt; display: none">
+    Your team has contributed {{ GroupContribution }} effort points, surpassing the minimum threshold.
+    Consequently, you've earned an additional 14 points.
+    However, your team is {{ LeftFromMax }} points short of reaching the maximum total of {{ MaxTotal }} points.
+    Therefore, {{ Externality }} points will be deducted from the charity.
+    {{ AccountBalance }} points reside in your account.
+    If this round is selected, your total earnings will amount to {{ Earnings }} points, including the extra 14 points.
+</p>
+
+<p id="Fail" style="margin-left: 5px; margin-top: 20px; font-size: 12pt; display: none">
+    Your team has contributed {{ GroupContribution }} effort points, falling below the minimum threshold.
+    As a result, {{ Externality }} points will be deducted from the charity.
+    Since the minimum threshold of {{ Threshold }} points has not been met, all members of your team will lose their effort points.
+    If this round is chosen, your earnings will be 0 points.
+</p>
+
+{{ next_button }}
+
+
+<script>
+    const Status = js_vars.Status;
+    document.getElementById(Status).style.display = 'block';
+
+</script>
+
+{{ endblock }}

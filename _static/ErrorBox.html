@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+    .stlError {
+        background-color: red;
+        color: white;
+        padding: 5px;
+        margin: auto;
+        clear: both;
+    }
+    .stlErrorText {
+        font-size: 0.9em;
+        vertical-align: center;
+        padding-left: 10px;
+    }
+    .fixedPos {
+      position: fixed;
+      bottom: 0;
+    }
+</style>
+
+
+<div id="divErrorBox" class="fixedPos"
+     style="background-color: #D5ECCB; width: 40%; margin: 10px 0 20px 0; align-content: center;">
+</div>
+
+<template id="tltErrorBox">
+    <div class="stlError" style="display: none;">
+        <span class="stlCloseBtn">&times;</span>
+        <p style="margin: 3px;">
+            <span class="stlErrorText"></span>
+        </p>
+
+        <table style="width: 95%">
+            <tr>
+            </tr>
+        </table>
+    </div>
+</template>
+
+<p id="bla"></p>
+
+<script>
+    let allErrorBoxes = [];
+    class ErrorBox {
+        constructor(Text, CloseButton) {
+            this._text = Text;
+            this._blnButton = CloseButton;
+            this._tmplt = document.getElementById('tltErrorBox');
+            this.boxError = this._tmplt.content.cloneNode(true);
+            this._divError =  this.boxError.querySelector('div');
+            this._divErrorID = 'idErrorBox' + Math.round(allErrorBoxes.length+1);
+            let theSpans = this.boxError.querySelectorAll('span');
+            this._btnErrorClose = theSpans[0];
+            this._textField = theSpans[1];
+            this._textField.innerHTML = this._text
+            this._hidden = true;
+            document.getElementById("divErrorBox").appendChild(this.boxError);
+        }
+        Text() {
+            return this._text;
+        }
+        setText(the_text) {
+            this._text = the_text;
+            this._textField.innerHTML = this._text
+        }
+        setCloseButton(blnButton) {
+            this._blnButton = blnButton;
+        }
+        show() {
+            if (this._blnButton) {
+                this._btnErrorClose.style.display = 'block';
+                let thisDivError = this._divError;
+                this._btnErrorClose.onclick = function() {thisDivError.style.display = 'none'};
+            } else {
+                this._btnErrorClose.style.display = 'none';
+            }
+            this._divError.style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+        hide() {
+            this._divError.style.display = 'none';
+        }
+        Hidden() {
+            return this._hidden;
+        }
+    }
+
+    function showError(ErrorText, CloseButton) {
+        //First, check if this error box has been constructed before
+        let blnIsNew = true;
+        for (let erBoxNum in allErrorBoxes) {
+            let erBox = allErrorBoxes[erBoxNum];
+            if(erBox.Text() === ErrorText) {
+                blnIsNew = false;
+                if (erBox.Hidden()) {erBox.show();}
+                return erBox;
+            }
+        }
+        if(blnIsNew) {
+            let newBox = new ErrorBox(ErrorText, CloseButton);
+            allErrorBoxes.push(newBox);
+            newBox.show();
+            return newBox;
+        }
+    }
+
+    function hideError(TheErrorBox) {
+        if(typeof(TheErrorBox) != 'undefined') {TheErrorBox.hide();}
+    }
+</script>
+
+</html>

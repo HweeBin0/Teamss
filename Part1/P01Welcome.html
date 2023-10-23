@@ -1,0 +1,45 @@
+{{ block title }}
+    <h1 style="margin-bottom: 20px;"><b>Welcome</b></h1>
+{{ endblock }}
+
+{{ block content }}
+{{ include '_static/MyStyles.html'}}
+
+<p class="stlText">
+    A very warm welcome to you, and thank you for participating. What this experiment is about and how it proceeds will
+    be explained on the following pages.
+</p>
+<p class="stlText">
+    But before we begin, please fill in the form below. The information you provide is for statistical purposes only.
+</p>
+
+<div class="stlGreyPanel">
+    {{ formfields }}
+</div>
+
+{{ next_button }}
+
+<!-- Comments -->
+
+<script>
+    let btnNext = document.getElementsByClassName('otree-btn-next')[0];
+    btnNext.innerHTML = 'Submit';
+    btnNext.className = 'stlMyButton';
+    btnNext.style.float = 'none';
+    btnNext.style.marginLeft = '0';
+    if (js_vars.TestBot) {
+        document.getElementById('id_Age').value = js_vars.TestAge;
+        document.getElementById('id_Nationality').value = js_vars.TestNat;
+        document.getElementById('id_StudyField').value = js_vars.TestField;
+        document.getElementById('id_StudyLevel').value = js_vars.TestLevel;
+        document.getElementById("id_StudyLevel-" + js_vars.TestLevel).click();
+        document.getElementById('id_StudyYear').value = js_vars.TestYear;
+        document.getElementById('id_Male-' + js_vars.TestMale).click();
+    }
+    if (js_vars.TestBot) {setTimeout(submitPage, 2500)}
+    function submitPage() {
+        btnNext.click()
+    }
+</script>
+
+{{ endblock }}

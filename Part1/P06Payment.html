@@ -1,0 +1,18 @@
+{{ block title }}
+    <h1 style="margin-bottom: 20px;"><b>Thank you</b></h1>
+{{ endblock }}
+{{ block content }}
+
+<div id="DivNextButton" style="margin-top: 50px;>
+    <p id="EndTitle" class="h3" style="margin-top: 30px">
+      Round number {{ SelectedRound }} has been selected.
+      You have earned a total of {{ Earned }}, including the participation fee.
+      {{ Donation }} will be donated to the charity organization UNICEF.
+    </p>
+    {{ next_button }}
+    <p id="EndInfo" style="margin-left: 5px; margin-top: 20px; margin-bottom: 0; font-size: 12pt">
+        Click this button to end the experiment.
+    </p>
+</div>
+
+{{ endblock }}

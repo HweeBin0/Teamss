@@ -1,0 +1,103 @@
+<style>
+    .otree-timer {
+        display: none;
+    }
+    div.TopCorner {
+        position: fixed;
+        top: 27px;
+        right: 30px;
+    }
+</style>
+
+<div id="divTimer" class="TopCorner"
+     style="border-color: darkslategray; border-style: solid; border-width: 2px; border-radius: 12px;
+     background-color: #fa907c; display: block">
+    <p id="Timer" style="margin: 5px 15px 5px 15px; font-size: 1em; color: black;">Time left:
+        <span id="time-left" style="color: black; font-weight: bold"></span>
+    </p>
+</div>
+
+<p id="test"></p>
+
+{{ include '_static/ErrorBox.html' }}
+
+<div id="HiddenTimerFields" style="display: none">
+    {{ formfield "TimeLeft" }}
+    {{ formfield "Timeout" }}
+</div>
+
+<script>
+    let Vertical = js_vars.Vertical;
+    let adjust = 0;
+    let adjust2 = 0;
+    let currentplayerT = 1;
+    // How to use Timer: Paste "include '_static/Timer.html'" in the code.
+    // Create a special time alert (e.g., when 10s are left): Set TimeAlert, e.g., TimeAlert = 10;
+    // Access to time left: SecondsLeft variable
+    let SecondsLeft = 0;
+    let TimeAlert = js_vars.TimeAlert;
+    let AlertBox;
+    let TimeShift = -1;
+    let fldTimeLeft = document.getElementById("id_TimeLeft");
+    let fldTimeout = document.getElementById("id_Timeout");
+    document.addEventListener("DOMContentLoaded", function (event) {
+        $('.otree-timer__time-left').on('update.countdown', function (event) {
+            if (TimeShift<0) {timer_Hide();}
+            SecondsLeft = event.offset.totalSeconds - TimeShift - adjust2;
+            /* if (SecondsLeft <= TimeAlert) {
+                if (typeof AlertBox === 'undefined') {
+                    AlertBox = showError("Time is running out! This page will be auto-submitted in: " + SecondsLeft, false);
+                } else {
+                    AlertBox.setText("Time is running out! This page will be auto-submitted in: " + SecondsLeft);
+                }
+                document.getElementById("divTimer").style.visibility = 'hidden';
+            } */
+            let currtime = js_vars.GroupTimeLimit - fldTimeLeft.value
+            let _minutes = Math.trunc(SecondsLeft/60);
+            let _seconds = SecondsLeft - 60*_minutes;
+            let _strSeconds = _seconds.toString();
+            if (_seconds<10) {_strSeconds = "0" + _strSeconds;}
+            if (SecondsLeft<=0) {
+                _minutes = 0;
+                _strSeconds = "00";
+                if (Vertical){
+                    sub();
+                    SecondsLeft = event.offset.totalSeconds - TimeShift;
+                } else {
+                    btnNext.click();
+                    fldTimeout.value = 1;
+                }
+
+            }
+            document.getElementById("time-left").innerText = _minutes + ":" + _strSeconds;
+            if (TimeShift>=0) {
+                if (Vertical) {
+                    if (js_vars.MyID === currentplayerT) {
+                        timer_Show();
+                    }
+                } else {
+                    timer_Show();
+                }
+            }
+            fldTimeLeft.value = SecondsLeft + TimeShift - adjust;
+            document.getElementById("test").innerHTML =" TimeShift: " + TimeShift + " SecondsLeft: " + SecondsLeft +
+                " CurrentTime: " + fldTimeLeft.value + " curr: " + currtime +
+                " adjust: " + adjust + " " + event.offset.totalSeconds + " adjust2: " + adjust2;
+        });
+    });
+
+    function timer_Hide() {
+        document.getElementById("divTimer").style.display = "none";
+    }
+    function timer_Show() {
+        document.getElementById("divTimer").style.display = "block";
+    }
+
+    function sub() {
+        liveSend({
+            'MsgType': "submit",
+            'CurTime': js_vars.GroupTimeLimit - fldTimeLeft.value,
+            'CurPlayer': CurrentPlayer
+        });
+    }
+</script>

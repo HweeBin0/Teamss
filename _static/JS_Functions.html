@@ -1,0 +1,62 @@
+<script>
+
+    function numFormat(TheNumber, Digits) {
+        if (Digits===-1) {
+            Digits=3;
+            if (100*TheNumber === Math.round(100*TheNumber)) {Digits=2;}
+            if (10*TheNumber === Math.round(10*TheNumber)) {Digits=1;}
+            if (TheNumber === Math.round(TheNumber)) {Digits=0;}
+        }
+        return TheNumber.toFixed(Digits).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
+    }
+
+    function textifyNumber(theNumber) {
+        let remaining = theNumber;
+        let strApprox = "";
+        let billions = Math.floor(remaining / 1000000000);
+        remaining -= 1000000000*billions;
+        let millions = Math.floor(remaining / 1000000);
+        remaining -= 1000000*millions;
+        let thousands = Math.floor(remaining / 1000);
+        remaining -= 1000*thousands;
+        let blnHighNumber = false;
+        let strBillion = "";
+        if (billions>0) {
+            strBillion = billions.toString() + " billion";
+            blnHighNumber = true;
+            strApprox = Math.round(theNumber / 1000000000).toString() + " billion";
+        }
+        let strMillion = "";
+        if (millions>0) {
+            strMillion = millions.toString() + " million";
+            blnHighNumber = true;
+            if(strApprox==="") {strApprox = Math.round(theNumber / 1000000).toString() + " million";}
+        }
+        let strThousands = "";
+        if (thousands>0) {
+            strThousands = thousands.toString() + " thousand";
+            blnHighNumber = true;
+            if(strApprox==="") {strApprox = Math.round(theNumber / 1000).toString() + " thousand";}
+        }
+        let strRemaining = "";
+        if (remaining>0) {
+            if(strApprox==="") {strApprox = Math.round(remaining).toString();}
+            if (blnHighNumber) {strRemaining = "and "}
+            remaining = Math.round(1000*Number(remaining))/1000;
+            strRemaining += remaining.toString()
+        }
+        if(strApprox === "") {return "Zero";}
+        if(strApprox === strBillion + strMillion + strThousands + strRemaining) {
+            return strApprox;
+        } else {
+            return strBillion + " " + strMillion + " " + strThousands + " " + strRemaining
+                + " (approximately " + strApprox + ")";
+        }
+    }
+
+    function iif(truefalse, val1, val2) {
+        let value = val2;
+        if(truefalse) {value=val1;}
+        return value;
+    }
+</script>

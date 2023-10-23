@@ -1,0 +1,11 @@
+{{ block title }}
+    Result
+{{ endblock }}
+
+{{ block content }}
+    Your team has provided {{ total_contribution }} effort points which is less than the minimum threshold. <br>
+    {{ externality }} points will be deducted from the charity. <br>
+    As the minimum threshold is not reached, you will lose all your effort points. <br>
+    If this round is selected, you would earn 0 points.
+    {{ next_button }}
+{{ endblock }}

@@ -1,0 +1,219 @@
+{{ include '_static/MyStyles.html'}}
+
+{{ block title }}
+    <h1 style="margin-bottom: 20px;"><b>Instructions</b></h1>
+{{ endblock }}
+
+{{ block content }}
+<style>
+    .tab {
+        display: none;
+    }
+    .stlBtnNextContainer {
+        clear: both;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .stlBtnNext {
+        background-color: royalblue;
+        margin-left: 3px;
+        margin-right: 3px;
+    }
+    .stlBtnNext:hover {
+        background-color: darkblue;
+    }
+</style>
+
+{{ include '_static/JS_Functions.html'}}
+
+<div class="tab">
+    <h3 style="padding-top: 15px;"><b>General information</b></h3>
+    <p class="stlText">
+        Thank you once again very much for taking part! This session is part of an experiment on decision-making in
+        economics. At the end of the session you will be paid, in private and in cash {{ ShowUpFee }} Euros just for
+        taking part, plus an additional amount that will depend on your decisions and on the decisions of others. How
+        this works will now be explained in these instructions. So, please read them carefully. If you have any
+        questions, don't hesitate to ask.
+    </p>
+    <h3 style="padding-top: 15px;"><b>Teams</b></h3>
+    <p class="stlText">
+        At the start of the experiment, you will be grouped with {{ Others }} other individuals, randomly chosen from
+        the people who are present today. Together you form a team of {{ TeamSize }}. Every team member receives an ID
+        number from 1 to {{ TeamSize }}. You will remain in the same team throughout the entire experiment, and your ID
+        number will also remain the same throughout. You will never be informed about the identities of the people
+        behind other ID numbers.
+    </p>
+    <h3 style="padding-top: 15px;"><b>Rounds</b></h3>
+    <p class="stlText">
+        The experiment consists of {{ NumRounds }} rounds, all of which proceed in the same way. After round 3 and after
+        round 6, there will be some small changes. You will receive information about these changes at the appropriate
+        time.
+    </p>
+    <h3 style="padding-top: 15px;"><b>Payment</b></h3>
+    <p class="stlText">
+        During the experiment, earnings will be denoted in "points". Each point is worth {{ PointValue }} Cents. At the
+        end of the experiment, ONE of the {{ NumRounds }} rounds will be chosen randomly. Your point earnings in this
+        randomly chosen round will determine your payment in Euros.
+    </p>
+    <p class="stlBtnNextContainer">
+        <button type="button" class="btn btn-secondary btn-tab stlBtnNext" data-offset="1">Next</button>
+    </p>
+</div>
+
+<div class="tab">
+    <h3 style="padding-top: 15px;"><b>What happens in each round?</b></h3>
+    <p class="stlText">
+        At the beginning of a round, you will receive an initial amount of {{ Endowment }} points, paid into your
+        <strong>private account</strong>. During the round, you can choose to transfer points from your private account
+        to the <strong>team account</strong>. Any points you choose not to transfer will remain in your private account.
+        The situation is the same for your teammates.
+    </p>
+    <p class="stlText">
+        You can imagine that you and your teammates are working on a team project. The team project will either fail or
+        succeed. It succeeds if, by the end of the round, the members of your team have overall transferred at least
+        {{ OneThird }} points (in total) from their private accounts to the team account. If the project succeeds, each
+        team member will receive a reward of {{ Clear }} points - regardless of how much each individual has contributed
+        to the project. If the threshold of {{ OneThird }} points is not reached, then the team project fails and no
+        reward is paid.
+    </p>
+    <p class="stlText">
+        Furthermore, a donation to the charity organization UNICEF will be made, and the amount donated will depend on
+        how many points have been allocated to the team accounts. For each team, UNICEF receives a budget of {{ xx }}
+        points at the beginning of the round. However, by default, the computer is programmed to destroy all {{ xx }}
+        UNICEF points at the end of the round. But for every 1 point that you and your team members transfer to the team
+        account, 2 points of UNICEF are protected and will not be destroyed by the computer. If your team account
+        reaches the maximum total of {{ x }} points, UNICEF will keep its entire budget.
+    </p>
+    <p class="stlText">
+        The payment for UNICEF follows the same rules as the payment for you: Only the randomly selected round will be
+        relevant for the actual donation, and each point is worth 20 Cents.
+    </p>
+    <p class="stlBtnNextContainer">
+        <button type="button" class="btn btn-secondary btn-tab stlBtnNext" data-offset="-1">
+            Back
+        </button>
+        <button type="button" class="btn btn-secondary btn-tab stlBtnNext" data-offset="1">
+            Next
+        </button>
+    </p>
+</div>
+
+<div class="tab">
+    <h3 style="padding-top: 15px;"><b>How to contribute points</b></h3>
+    <div id="vertical-false" style="display: none;">
+        <p class="stlText">
+            During the round, you will see a timer on the screen, and while the timer is running, you and your teammates
+            can transfer points to the team account by clicking on some buttons on your screen. There will be a "+1" button
+            and a "+10" button. Every time you click on the "+1" button, 1 point will be transferred from your private
+            account to the team account. Every time you click on the "+10" button, 10 points will be transferred from your
+            private account to the team account. On the left hand side of the screen, you will see real-time information
+            about the current total number of points in the team account. You will also see how many points are left in your
+            private account. The computer will not allow you to run into a deficit for your private account.
+        </p>
+        <p class="stlText">
+            Initially, the timer on your screen starts with a 30-second countdown. However, if you or one of your teammates
+            makes a transfer during the last 20 seconds of the countdown, the available time will be extended and the timer
+            starts again from 20 seconds. Subsequently, the timer will continue to refresh to 20 seconds as long as at least
+            one of the team members makes another transfer. The round will end either when you and your teammates let the
+            timer run out, or when you have reached the maximum total of {{ x }} points in the team account. (There also is
+            a randomly determined maximum time limit for each round; should this time limit be reached then the computer
+            will simply stop refreshing the timer even if you make another transfer.)
+        </p>
+    </div>
+    <div id="vertical-true" style="display: none;">
+        <p class="stlText">
+            You and your teammates will take turns to decide how many points to transfer to the team account. Team
+            Member 1 goes first, is followed by team member 2 and so on. If you are team member 1, the team account will
+            start with a balance of 0 points. If you are one of the other team members you will see on your screen how
+            many points have already been transferred to the team account.
+        </p>
+        <p class="stlText">
+            When it is your turn, you will see a timer on the screen, and while the timer is running, you can transfer
+            points to the team account by clicking on some buttons on your screen. There will be a "+1" button and a
+            "+10" button. Every time you click on the "+1" button, 1 point will be transferred from your private account
+            to the team account. Every time you click on the "+10" button, 10 points will be transferred from your
+            private account to the team account. You will also see how many points are left in your private account. On
+            the left hand side of the screen, you will see real-time information about the current total number of
+            points in the team account. The computer will not allow you to run into a deficit for your private account.
+        </p>
+        <p class="stlText">
+            Initially, the timer on your screen starts with a 30-second countdown. However, if you make a transfer during
+            the last 20 seconds of the countdown, the available time will be extended and the timer starts again from 20
+            seconds. Subsequently, the timer will continue to refresh to 20 seconds as long as you make another transfer.
+            The round will end either when you let the timer run out, or when you have reached the maximum total of {{ x }}
+            points in the team account. (There also is a randomly determined maximum time limit for each round; should
+            this time limit be reached then the computer will simply stop refreshing the timer even if you make another transfer.)
+        </p>
+    </div>
+    <p class="stlBtnNextContainer">
+        <button type="button" class="btn btn-secondary btn-tab stlBtnNext" data-offset="-1">
+            Back
+        </button>
+        <button type="button" class="btn btn-secondary btn-tab stlBtnNext" data-offset="1">
+            Next
+        </button>
+    </p>
+</div>
+
+<div class="tab">
+    <h3 style="padding-top: 15px;"><b>Are you ready to begin?</b></h3>
+    <p class="stlText">
+        This completes our instructions for this part of the experiment. Before you begin, please check again that you
+        have understood the instructions. If you have any questions, don't hesitate to ask.
+    </p>
+    <p class="stlBtnNextContainer">
+        <button type="button" class="btn btn-secondary btn-tab stlBtnNext" data-offset="-1">
+            Back
+        </button>
+    </p>
+    <p style="clear: both; display: flex; justify-content: right; align-items: end;">
+        {{ next_button }}
+    </p>
+</div>
+    <p style="clear: both; display: flex; justify-content: right; align-items: end;">
+        {{ next_button }}
+    </p>
+
+<script>
+    let activeTab = 0;
+    let me = "0";
+    let vertical = js_vars.Vertical;
+
+    let btnNext = document.getElementsByClassName('otree-btn-next')[0];
+    btnNext.innerHTML = 'Start experiment';
+    btnNext.className = 'stlMyButton';
+    btnNext.style.float = 'right';
+
+    showCurrentTabOnly();
+    for (let btn of document.getElementsByClassName('btn-tab')) {
+        btn.onclick = function () {
+            activeTab += parseInt(btn.dataset.offset);
+            showCurrentTabOnly();
+            window.scrollTo(0,0);
+        }
+    }
+
+    function showCurrentTabOnly() {
+        let tabIndex = 0;
+        for (let tab of document.getElementsByClassName('tab')) {
+            tab.style.display = tabIndex === activeTab ? 'block' : 'none';
+            tabIndex++;
+        }
+    }
+
+    // Disable "Enter" key to prevent submitting the form accidentally
+    $('html').bind('keypress', function(e) {
+        if(e.keyCode === 13 || e.key === 'Enter') {
+            return false;
+        }
+    });
+
+    if (vertical) {
+            document.getElementById('vertical-true').style.display = 'block';
+        } else {
+            document.getElementById('vertical-false').style.display = 'block';
+        }
+</script>
+
+{{ endblock }}
